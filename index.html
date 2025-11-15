@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>오늘 뭐 먹지? 룰렛</title>
     <style>
-        /* 기본 스타일 (CSS) */
+        /* (CSS 스타일은 이전과 동일합니다.) */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             display: flex;
@@ -13,7 +13,7 @@
             align-items: center;
             flex-direction: column;
             min-height: 100vh;
-            background-color: #fdfaf6; /* 약간 따뜻한 배경색 */
+            background-color: #fdfaf6;
             margin: 0;
             padding: 20px 0;
         }
@@ -31,8 +31,6 @@
             margin-top: 0;
             margin-bottom: 25px;
         }
-
-        /* 룰렛 결과 창 */
         #result-display {
             width: 100%;
             height: 100px;
@@ -46,9 +44,8 @@
             color: #333;
             margin-bottom: 20px;
             box-sizing: border-box;
-            overflow: hidden; /* 텍스트가 넘치지 않도록 */
+            overflow: hidden;
         }
-        /* [추가] 룰렛 결과 강조 효과 */
         #result-display.active {
             color: #d9534f;
             border-color: #d9534f;
@@ -59,12 +56,10 @@
             50% { transform: scale(1.05); }
             100% { transform: scale(1); }
         }
-
-        /* 돌리기 버튼 */
         #spin-btn {
             width: 100%;
             padding: 15px 20px;
-            background-color: #f0ad4e; /* 주황색 계열 */
+            background-color: #f0ad4e;
             color: white;
             border: none;
             border-radius: 5px;
@@ -80,8 +75,6 @@
             background-color: #ccc;
             cursor: not-allowed;
         }
-
-        /* 메뉴 관리 영역 */
         .menu-management {
             margin-top: 30px;
             text-align: left;
@@ -107,24 +100,24 @@
         }
         .add-form button {
             padding: 0 15px;
-            background-color: #5cb85c; /* 초록색 */
+            background-color: #5cb85c;
             color: white;
             border: none;
             border-radius: 5px;
             font-weight: 500;
             cursor: pointer;
         }
-        
-        /* 메뉴 목록 */
         #menu-list {
             list-style: none;
             padding: 0;
             margin: 0;
             max-height: 150px;
-            overflow-y: auto; /* 메뉴 많아지면 스크롤 */
+            overflow-y: scroll; 
             border: 1px solid #eee;
             border-radius: 5px;
             padding: 5px;
+            scrollbar-width: thin;
+            scrollbar-color: #ccc #f1f1f1;
         }
         #menu-list li {
             display: flex;
@@ -137,7 +130,7 @@
             border-bottom: none;
         }
         #menu-list .delete-btn {
-            background-color: #d9534f; /* 붉은색 */
+            background-color: #d9534f;
             color: white;
             border: none;
             border-radius: 50%;
@@ -148,6 +141,20 @@
             font-size: 0.8rem;
             line-height: 22px;
             text-align: center;
+        }
+        #menu-list::-webkit-scrollbar {
+            width: 8px;
+        }
+        #menu-list::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+            border-radius: 10px;
+        }
+        #menu-list::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 10px;
+        }
+        #menu-list::-webkit-scrollbar-thumb:hover {
+            background: #aaa; 
         }
     </style>
 </head>
@@ -175,36 +182,37 @@
     <script>
         // --- JavaScript 로직 ---
         
-        // 1. 필요한 HTML 요소 선택
         const resultDisplay = document.getElementById('result-display');
         const spinBtn = document.getElementById('spin-btn');
         const newMenuInput = document.getElementById('new-menu-input');
         const addMenuBtn = document.getElementById('add-menu-btn');
         const menuListEl = document.getElementById('menu-list');
 
-        // 2. 메뉴 데이터 관리
         const STORAGE_KEY = 'foodMenu';
-        let menuItems = [
-            '짜장면', '햄버거', '제육볶음', '돈까스', '초밥', '파스타', '치킨', '피자', '국밥', '김치찌개'
-        ];
 
-        // 3. localStorage에서 메뉴 불러오기
+        // --- [수정된 부분] ---
+        let menuItems = [
+            '짜장면', '햄버거', '제육볶음', '돈까스', '초밥', '파스타', '치킨', '피자', '순대국밥', '김치찌개'
+        ];
+        // ---------------------
+
         function loadMenu() {
             const storedMenu = localStorage.getItem(STORAGE_KEY);
+            // [수정] 저장된 메뉴가 없으면 기본 메뉴를 사용하고, *있으면* 저장된 메뉴를 씀
             if (storedMenu) {
                 menuItems = JSON.parse(storedMenu);
+            } else {
+                // 저장된 메뉴가 없으면(최초 방문 시) 기본 메뉴를 localStorage에 저장
+                saveMenu();
             }
-            // (데이터가 없으면 기본값 menuItems 사용)
         }
 
-        // 4. localStorage에 메뉴 저장하기
         function saveMenu() {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(menuItems));
         }
 
-        // 5. 화면에 메뉴 목록 그리기 (추가/삭제 시 호출)
         function renderMenuList() {
-            menuListEl.innerHTML = ''; // 목록 비우기
+            menuListEl.innerHTML = '';
             
             if (menuItems.length === 0) {
                 menuListEl.innerHTML = '<li>메뉴를 추가해주세요!</li>';
@@ -221,11 +229,10 @@
                 deleteBtn.textContent = 'X';
                 deleteBtn.className = 'delete-btn';
                 
-                // [이벤트] 삭제 버튼 클릭 시
                 deleteBtn.addEventListener('click', function() {
-                    menuItems.splice(index, 1); // 배열에서 해당 아이템 삭제
-                    saveMenu(); // 저장
-                    renderMenuList(); // 목록 새로고침
+                    menuItems.splice(index, 1);
+                    saveMenu();
+                    renderMenuList();
                 });
                 
                 li.appendChild(text);
@@ -234,7 +241,6 @@
             });
         }
 
-        // 6. [이벤트] 새 메뉴 추가 버튼 클릭 시
         addMenuBtn.addEventListener('click', function() {
             const newItem = newMenuInput.value.trim();
             
@@ -242,57 +248,52 @@
                 if (menuItems.includes(newItem)) {
                     alert('이미 있는 메뉴입니다.');
                 } else {
-                    menuItems.push(newItem); // 배열에 추가
-                    saveMenu(); // 저장
-                    renderMenuList(); // 목록 새로고침
-                    newMenuInput.value = ''; // 입력창 비우기
+                    menuItems.push(newItem);
+                    saveMenu();
+                    renderMenuList();
+                    newMenuInput.value = '';
                 }
             }
         });
 
-        // 7. [이벤트] 룰렛 돌리기 버튼 클릭 시
         spinBtn.addEventListener('click', function() {
             if (menuItems.length === 0) {
                 alert('메뉴가 없습니다! 메뉴를 먼저 추가해주세요.');
                 return;
             }
 
-            spinBtn.disabled = true; // 버튼 비활성화
-            resultDisplay.classList.remove('active'); // 강조 효과 제거
+            spinBtn.disabled = true;
+            resultDisplay.classList.remove('active');
             resultDisplay.style.color = '#999';
 
             let spinCount = 0;
-            const totalSpins = 20; // 애니메이션 '틱' 횟수
-            const spinInterval = 100; // 0.1초마다 변경
+            const totalSpins = 20;
+            const spinInterval = 100;
 
             const interval = setInterval(() => {
                 spinCount++;
                 
-                // 임시로 랜덤 메뉴 표시 (애니메이션 효과)
                 const randomIndex = Math.floor(Math.random() * menuItems.length);
                 resultDisplay.textContent = menuItems[randomIndex];
 
                 if (spinCount >= totalSpins) {
-                    clearInterval(interval); // 애니메이션 중지
+                    clearInterval(interval);
                     
-                    // 최종 결과 선택
                     const finalIndex = Math.floor(Math.random() * menuItems.length);
                     const finalResult = menuItems[finalIndex];
                     
                     resultDisplay.textContent = finalResult;
-                    resultDisplay.classList.add('active'); // 강조 효과 추가
-                    resultDisplay.style.color = ''; // 기본 색상으로 복원
-                    spinBtn.disabled = false; // 버튼 활성화
+                    resultDisplay.classList.add('active');
+                    resultDisplay.style.color = '';
+                    spinBtn.disabled = false;
                 }
             }, spinInterval);
         });
 
-        // --- 페이지 로드 시 초기화 ---
         document.addEventListener('DOMContentLoaded', () => {
             loadMenu();
             renderMenuList();
         });
-
     </script>
 
 </body>
