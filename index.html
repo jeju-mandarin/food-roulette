@@ -181,6 +181,7 @@
             <span>메뉴를 골라보세요!</span>
         </div>
         <button id="spin-btn">돌리기!</button>
+        <button id="stat-btn" style="display:none;">통계 보기</button>
 
         <div class="menu-management">
             <h2>메뉴 관리 (localStorage)</h2>
@@ -206,6 +207,7 @@
         const newMenuInput = document.getElementById('new-menu-input');
         const addMenuBtn = document.getElementById('add-menu-btn');
         const menuListEl = document.getElementById('menu-list');
+        const statBtn = document.getElementById('stat-btn');
 
         const STORAGE_KEY = 'foodMenu';
 
@@ -285,22 +287,38 @@
             resultDisplay.classList.remove('active');
             resultDisplay.style.color = '#999';
 
+            // Crypto 기반 난수 생성
+            function getSecureRandomIndex(length) {
+                const array = new Uint32Array(1);
+                window.crypto.getRandomValues(array);
+                return array[0] % length;
+            }
+
+            // Fisher-Yates 셔플
+            function shuffle(array) {
+                let arr = array.slice();
+                for (let i = arr.length - 1; i > 0; i--) {
+                    const j = getSecureRandomIndex(i + 1);
+                    [arr[i], arr[j]] = [arr[j], arr[i]];
+                }
+                return arr;
+            }
+
             let spinCount = 0;
             const totalSpins = 20;
             const spinInterval = 100;
 
             const interval = setInterval(() => {
                 spinCount++;
-                
-                const randomIndex = Math.floor(Math.random() * menuItems.length);
-                resultDisplay.textContent = menuItems[randomIndex];
+                // 셔플 후 첫 번째 메뉴 표시
+                const shuffled = shuffle(menuItems);
+                resultDisplay.textContent = shuffled[0];
 
                 if (spinCount >= totalSpins) {
                     clearInterval(interval);
-                    
-                    const finalIndex = Math.floor(Math.random() * menuItems.length);
-                    const finalResult = menuItems[finalIndex];
-                    
+                    // 마지막 결과도 셔플 후 첫 번째 메뉴
+                    const finalShuffled = shuffle(menuItems);
+                    const finalResult = finalShuffled[0];
                     resultDisplay.textContent = finalResult;
                     resultDisplay.classList.add('active');
                     resultDisplay.style.color = '';
